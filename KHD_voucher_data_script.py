@@ -43,7 +43,7 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/TEMPLATE_herbariumVoucherData.xlsx'
+    input_file = 'C:/KHD_voucherDataProcessingScript/testData.xlsx'
     output_file = 'C:/KHD_voucherDataProcessingScript/testOutput.csv'
 
 def main():
@@ -68,7 +68,7 @@ def main():
     with open(input_csv, 'r') as infile:
         reader = csv.DictReader(infile)
         # Add a list of new field names to be added to existing fields
-        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType']
+        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans']
         # Open the output file
         with open(outfile, 'w', newline='') as outfile:
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -90,6 +90,7 @@ def main():
                 materialSample_sampleType(row)
                 materialSample_disposition(row)          
                 materialSample_preservationType(row)
+                establishmentMeans(row)
             
                 writer.writerow(row)
                 
@@ -314,6 +315,14 @@ def materialSample_preservationType(row):
     if row['Tissue Collected'].lower() == 'y':
         materialSample_preservationType += 'dessicated'
     row['materialSample-preservationType'] = materialSample_preservationType
+
+# Populate new field 'establishmentMeans'
+def establishmentMeans(row):
+    establishmentMeans = ''            
+    if row['cultivationStatus'] == '1':
+        establishmentMeans += 'managed'
+    row['establishmentMeans'] = establishmentMeans
+
 
 
 if __name__ == "__main__":
