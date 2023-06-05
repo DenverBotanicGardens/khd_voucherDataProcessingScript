@@ -43,8 +43,8 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/testData.xlsx'
-    output_file = 'C:/KHD_voucherDataProcessingScript/testOutput.csv'
+    input_file = 'C:/KHD_voucherDataProcessingScript/EXAMPLE_herbariumVoucherData.xlsx'
+    output_file = 'C:/KHD_voucherDataProcessingScript/EXAMPLE_herbariumVoucherDataTEST.csv'
 
 def main():
     
@@ -86,7 +86,7 @@ def main():
                 occurrenceRemarks(row)
                 description(row)
                 dynamicProperties(row)
-                associatedTaxa(row)         
+                # associatedTaxa(row)         
                 materialSample_sampleType(row)
                 materialSample_disposition(row)          
                 materialSample_preservationType(row)
@@ -233,7 +233,9 @@ def occurrenceRemarks(row):
             if row['Tissue Collected'].lower() == 'y'and row['Tissue Relationship'].lower() == 'same population':
                 occurrenceRemarks += 'Tissue sample collected from another individual in the same population. '
             if row['additionalCollectorNotes']:
-                occurrenceRemarks += row['additionalCollectorNotes'].title() + '. '
+                x = '. '.join(i.capitalize() for i in row['additionalCollectorNotes'].split('. '))
+                occurrenceRemarks += x + '. '
+                # occurrenceRemarks += row['additionalCollectorNotes'].capitalize() + '. '
             if row['iNaturalist ID']:
                 occurrenceRemarks += "<a href='https://inaturalist.org/observations/" + row['iNaturalist ID'] + "' target='_blank' style='color: blue';>iNaturalist Record: " + row['iNaturalist ID']  + "</a>."
             row['occurrenceRemarks'] = occurrenceRemarks              
@@ -286,11 +288,11 @@ def dynamicProperties(row):
             
 # update 'associatedTaxa'
 # This updates an existing field rather than populating a new field
-def associatedTaxa(row):            
-            associatedTaxa = ''
-            if row['host']:
-                associatedTaxa += row['associatedTaxa'] + ', host: ' + row['host']
-            row['associatedTaxa'] = associatedTaxa
+# def associatedTaxa(row):            
+#             associatedTaxa = ''
+#             if row['host']:
+#                 associatedTaxa += row['associatedTaxa'] + ', host: ' + row['host']
+#             row['associatedTaxa'] = associatedTaxa
 
 
 # Populate new field 'materialSample-sampleType'
