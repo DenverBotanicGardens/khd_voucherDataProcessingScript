@@ -617,7 +617,7 @@ def dynamicProperties(row):
             row['dynamicProperties'] = dynamicProperties                
             
             
-# update 'associatedTaxa'
+# update 'associatedTaxa'-------------currently not working
 # This updates an existing field rather than populating a new field
 # def associatedTaxa(row):            
 #             associatedTaxa = ''
