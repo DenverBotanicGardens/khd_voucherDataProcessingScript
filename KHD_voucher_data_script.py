@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Mar  10 20:43:03 2023
+Updated on Fri Jun 30 13:16:33 2023
 
-@author: Ernie Marx
+@author: Ernie Marx & Richard Levy
 
 Reformatting of data for herbarium voucher records
 
