@@ -354,9 +354,9 @@ def minimumElevationInMeters(row):
           #print(df)
           #run function that calls API
           elevation_function(df, 'lat', 'lon')
+          georeferenceRemarks(row)
           #set row value to result rfom API call
      row['minimumElevationInMeters_USGS'] = elevationResult
-     georeferenceRemarks(row)
 
 #Function to call the USGS API
 def elevation_function(df, lat_column, lon_column):
