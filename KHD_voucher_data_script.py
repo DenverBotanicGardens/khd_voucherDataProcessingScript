@@ -70,7 +70,7 @@ def main():
     with open(input_csv, 'r') as infile:
         reader = csv.DictReader(infile)
         # Add a list of new field names to be added to existing fields
-        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'minimumElevationInMeters', 'georeferenceRemarks']
+        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'minimumElevationInMeters_USGS', 'georeferenceRemarks']
         # Open the output file
         with open(outfile, 'w', newline='') as outfile:
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -355,7 +355,7 @@ def minimumElevationInMeters(row):
           #run function that calls API
           elevation_function(df, 'lat', 'lon')
           #set row value to result rfom API call
-     row['minimumElevationInMeters'] = elevationResult
+     row['minimumElevationInMeters_USGS'] = elevationResult
      georeferenceRemarks(row)
 
 #Function to call the USGS API
