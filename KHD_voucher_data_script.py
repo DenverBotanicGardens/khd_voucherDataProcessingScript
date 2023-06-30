@@ -330,6 +330,7 @@ def establishmentMeans(row):
 
 #ELEVATION FROM USGS API---------------------------------------------------------------------------------------------
 # USGS Elevation Point Query Service
+# Generates elevation values from coordinates, when supplied.
 url = r'https://epqs.nationalmap.gov/v1/json?'
 
 #create the lat & lon variables
