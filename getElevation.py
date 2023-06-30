@@ -35,6 +35,7 @@ def elevation_function(df, lat_column, lon_column):
         #elevations.append(result.json()['USGS_Elevation_Point_Query_Service']['Elevation_Query']['Elevation'])
         #new 2023:
         print(result.json()['value'])
+        print(result.json())
         elevations.append(result.json()['value'])
 
     df['elev_meters'] = elevations
