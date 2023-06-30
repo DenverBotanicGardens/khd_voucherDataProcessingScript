@@ -45,8 +45,8 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/2021_AIverson_Thesis_Vouchers_rick.xlsx'
-    output_file = 'C:/KHD_voucherDataProcessingScript/2021_AIverson_Thesis_Vouchers_elevationTest.csv'
+    input_file = 'C:/KHD_voucherDataProcessingScript/2023_Yeatts_Utah_rick.csv'
+    output_file = 'C:/KHD_voucherDataProcessingScript/2023_Yeatts_Utah_test.csv'
 
 def main():
     
@@ -70,7 +70,7 @@ def main():
     with open(input_csv, 'r') as infile:
         reader = csv.DictReader(infile)
         # Add a list of new field names to be added to existing fields
-        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'minimumElevationInMeters']
+        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'minimumElevationInMeters', 'georeferenceRemarks']
         # Open the output file
         with open(outfile, 'w', newline='') as outfile:
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -355,8 +355,8 @@ def minimumElevationInMeters(row):
           #run function that calls API
           elevation_function(df, 'lat', 'lon')
           #set row value to result rfom API call
-     print("in write row function" + elevationResult +" !!!!!!")
      row['minimumElevationInMeters'] = elevationResult
+     georeferenceRemarks(row)
 
 #Function to call the USGS API
 def elevation_function(df, lat_column, lon_column):
@@ -375,10 +375,14 @@ def elevation_function(df, lat_column, lon_column):
     #new 2023:
     #print(json.dumps((result.json()['value'])))
     global elevationResult
-    elevationResult = json.dumps((result.json()['value']))
-    print("value from api" + json.dumps((result.json()['value'])))
+    elevationResult = json.dumps((result.json()['value'])).replace('"','')[:-8]
+    # print("value from api" + json.dumps((result.json()['value'])))
 
-
+# Populate new field 'georeferenceRemarks' with note about elevation source. Executes within minimElevationInMeters function
+def georeferenceRemarks(row):
+    georeferenceRemarks = ''            
+    remark = "Elevation value calculated using USGS Bulk Point Query Service (V 2.0)"
+    row['georeferenceRemarks'] = remark
 
 
 if __name__ == "__main__":
