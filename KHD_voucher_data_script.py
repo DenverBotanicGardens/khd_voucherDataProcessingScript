@@ -236,6 +236,8 @@ def occurrenceRemarks(row):
                 occurrenceRemarks += 'Tissue sample collected. '
             if row['Tissue Collected'].lower() == 'y'and row['Tissue Relationship'].lower() == 'same population':
                 occurrenceRemarks += 'Tissue sample collected from another individual in the same population. '
+            if row['Tissue Collected'].lower() == 'y'and row['Tissue Relationship'].lower() == '':
+                occurrenceRemarks += 'Tissue sample collected. '
             if row['additionalCollectorNotes']:
                 x = '. '.join(i.capitalize() for i in row['additionalCollectorNotes'].split('. '))
                 occurrenceRemarks += x + '. '
