@@ -230,7 +230,7 @@ def occurrenceRemarks(row):
             occurrenceRemarks = ''
             if row['Project Title']:
                 occurrenceRemarks += row['Project Title'].title() + '. '
-            if row['Frequency']:
+            if row['Frequency'] and freq != '':
                 occurrenceRemarks += 'Estimated frequency within viewshed: ' + freq + '. '
             if row['Tissue Collected'].lower() == 'y'and row['Tissue Relationship'].lower() == 'same individual':
                 occurrenceRemarks += 'Tissue sample collected. '
