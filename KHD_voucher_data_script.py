@@ -215,15 +215,15 @@ def occurrenceRemarks(row):
 
             # Translate the Frequency data         
             freq = ''
-            if row['Frequency'] == 'Abundant' or row['Frequency'] == 'abundant':
+            if row['Frequency'].replace(' ','') == 'Abundant' or row['Frequency'] == 'abundant':
                     freq = 'Abundant (>500)'
-            elif row['Frequency'] == 'Common' or row['Frequency'] == 'common':
+            elif row['Frequency'].replace(' ','') == 'Common' or row['Frequency'] == 'common':
                     freq = 'Common (101-500)'                    
-            elif row['Frequency'] == 'Frequent' or row['Frequency'] == 'frequent':
+            elif row['Frequency'].replace(' ','') == 'Frequent' or row['Frequency'] == 'frequent':
                     freq = 'Frequent (11-100)'                          
-            elif row['Frequency'] == 'Occasional' or row['Frequency'] == 'occasional':
+            elif row['Frequency'].replace(' ','') == 'Occasional' or row['Frequency'] == 'occasional':
                     freq = 'Occasional (6-10)'                  
-            elif row['Frequency'] == 'Rare' or row['Frequency'] == 'rare':
+            elif row['Frequency'].replace(' ','') == 'Rare' or row['Frequency'] == 'rare':
                     freq = 'Rare (1-5)'  
 
             # Populate field 'occurrenceRemarks'         
