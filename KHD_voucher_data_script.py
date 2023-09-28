@@ -221,8 +221,8 @@ def occurrenceRemarks(row):
                     freq = 'Common (101-500)'                    
             elif row['Frequency'] == 'Frequent' or row['Frequency'] == 'frequent':
                     freq = 'Frequent (11-100)'                          
-            elif row['Frequency'] == 'Occassional' or row['Frequency'] == 'occassional':
-                    freq = 'Occassional (6-10)'                  
+            elif row['Frequency'] == 'Occasional' or row['Frequency'] == 'occasional':
+                    freq = 'Occasional (6-10)'                  
             elif row['Frequency'] == 'Rare' or row['Frequency'] == 'rare':
                     freq = 'Rare (1-5)'  
 
