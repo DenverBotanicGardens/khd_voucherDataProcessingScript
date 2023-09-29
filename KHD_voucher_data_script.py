@@ -46,8 +46,8 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/2023_Yeatts_Utah_rick.csv'
-    output_file = 'C:/KHD_voucherDataProcessingScript/2023_Yeatts_Utah_test.csv'
+    input_file = 'C:/KHD_voucherDataProcessingScript/20230606-08_EasternPlains_JWingate.csv'
+    output_file = 'C:/KHD_voucherDataProcessingScript/test.csv'
 
 def main():
     
@@ -71,7 +71,7 @@ def main():
     with open(input_csv, 'r') as infile:
         reader = csv.DictReader(infile)
         # Add a list of new field names to be added to existing fields
-        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'minimumElevationInMeters_USGS', 'georeferenceRemarks']
+        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'minimumElevationInMeters_USGS', 'georeferenceRemarks','GNVmatchType','GNVmatchedCanonicalFull','GNVisSynonym','GNVcurrentCanonicalFull','GNVdataSourceTitleShort']
         # Open the output file
         with open(outfile, 'w', newline='') as outfile:
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -84,6 +84,7 @@ def main():
             # Execute a function for each new data field        
             for row in reader:
                 minimumElevationInMeters(row)
+                verifyScientificNames(row)
                 habitat(row)
                 dataGeneralizations(row)
                 locationRemarks(row)
@@ -388,6 +389,68 @@ def georeferenceRemarks(row):
     remark = "Elevation value calculated using USGS Bulk Point Query Service (V 2.0)"
     row['georeferenceRemarks'] = remark
 
+#SCIENTIFIC NAME VALIDATION FROM GLOBAL NAMES INDEX API---------------------------------------------------------------------------------------------
+# Global Names Resolver API endpoint
+verifier_api_url = "https://verifier.globalnames.org/api/v1/verifications"
+
+#Create variables for each value that needs to be added to the data sheet
+matchType = ''
+matchedCanonicalFull = ''
+isSynonym = ''
+currentCanonicalFull = ''
+dataSourceTitleShort = ''
+
+def verifyScientificNames(row):
+     #if there is a scientificName, set as variable and then add to the dataframe
+    if row['scientificName']:
+            nameStrings = row['scientificName']
+            #run function that calls API
+            gnv_function(nameStrings)
+            #set row value to result from API call
+    row['GNVmatchType'] = matchType
+    row['GNVmatchedCanonicalFull'] = matchedCanonicalFull
+    row['GNVisSynonym'] = isSynonym
+    row['GNVcurrentCanonicalFull'] = currentCanonicalFull
+    row['GNVdataSourceTitleShort'] = dataSourceTitleShort
+
+def gnv_function(nameStrings):
+    # define query params
+    params = {
+        "nameStrings": [nameStrings],
+        "withAllMatches": True,
+        "withCapitalization": True,
+        "withSpeciesGroup": True,
+        "withUninomialFuzzyMatch":False,
+        "withStats": True,
+        "mainTaxonThreshold": 0.6
+    }
+    #make the post request
+    gnvResponse = requests.post(verifier_api_url, json=params)
+    #convert the response to JSON
+    gnvResponseJSON = json.loads(gnvResponse.text)
+    #make variables global so they can be accessed inside this function
+    global matchType
+    global matchedCanonicalFull
+    global isSynonym
+    global currentCanonicalFull
+    global dataSourceTitleShort
+    #empty the variables, so the previous value is not carried over in case of a no match
+    matchType = ''
+    matchedCanonicalFull = ''
+    isSynonym = ''
+    currentCanonicalFull = ''
+    dataSourceTitleShort = ''
+    #set the global variables to the values from the response
+    matchType = gnvResponseJSON["names"][0]["matchType"]
+    #if there is no match, the json returned doesnt include a results item, so check first to avoid error
+    if matchType != "NoMatch":
+        #set the global variables to the values from the response
+        matchedCanonicalFull = gnvResponseJSON["names"][0]["results"][0]["matchedCanonicalFull"]
+        isSynonym = gnvResponseJSON["names"][0]["results"][0]["isSynonym"]
+        currentCanonicalFull = gnvResponseJSON["names"][0]["results"][0]["currentCanonicalFull"]
+        dataSourceTitleShort = gnvResponseJSON["names"][0]["results"][0]["dataSourceTitleShort"]
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     main()
