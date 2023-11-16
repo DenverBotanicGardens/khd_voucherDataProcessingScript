@@ -168,7 +168,7 @@ def habitat(row):
         elif row['aspect'].upper() == 'SSW':
             aspect_long = 'south southwest'
         else:
-            aspect_long = 'UNRECOGNIZED ASPECT VALUE - POSSIBLE ERROR'
+            aspect_long = row['aspect']
 
         # Populate the field 'habitat'    
         habitat = ''
