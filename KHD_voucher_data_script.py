@@ -46,8 +46,8 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/20230606-08_EasternPlains_JWingate.csv'
-    output_file = 'C:/KHD_voucherDataProcessingScript/test.csv'
+    input_file = 'C:/KHD_voucherDataProcessingScript/.csv'
+    output_file = 'C:/KHD_voucherDataProcessingScript/.csv'
 
 def main():
     
@@ -122,7 +122,7 @@ def main():
 def habitat(row):         
         habitat = ''
         if row['habitatType']:
-            habitat += row['habitatType'].title() + '. '
+            habitat += row['habitatType'] + '. '
         if row['microHabitat']:
             habitat += 'Area immediately surrounding specimen: ' + row['microHabitat'] + '. '
         if row['land use/disturbance']:
@@ -173,7 +173,7 @@ def habitat(row):
         # Populate the field 'habitat'    
         habitat = ''
         if row['habitatType']:
-            habitat += row['habitatType'].title() + '. '
+            habitat += row['habitatType'] + '. '
         if row['microHabitat']:
             habitat += 'Area immediately surrounding specimen: ' + row['microHabitat'] + '. '
         if row['land use/disturbance']:
