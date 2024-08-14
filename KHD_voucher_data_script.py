@@ -30,7 +30,6 @@ import pandas as pd
 import requests
 import urllib
 import json
-import re
 # Set mode = 1 to enter file names as command line arguments
 # Set mode = 2 to enter file names inside this script
 mode = 2
@@ -47,8 +46,8 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/test_rick.csv'
-    output_file = 'C:/KHD_voucherDataProcessingScript/test_script.csv'
+    input_file = 'C:/KHD_voucherDataProcessingScript/externalRefTest.csv'
+    output_file = 'C:/KHD_voucherDataProcessingScript/externalRefTest_1.csv'
 
 def main():
     
@@ -97,9 +96,8 @@ def main():
                 materialSample_disposition(row)          
                 materialSample_preservationType(row)
                 establishmentMeans(row)
-
                 writer.writerow(row)
-                
+        
         # Export the outfile as an Excel file if user indicated .xlsx
         if ext_out == "xlsx":
             df = pd.read_csv('temp_out.csv')
@@ -241,24 +239,24 @@ def occurrenceRemarks(row):
             if row['Tissue Collected'].lower() == 'y'and row['Tissue Relationship'].lower() == '':
                 occurrenceRemarks += 'Tissue sample collected. '
             if row['additionalCollectorNotes']:
-                x = '. '.join(i.capitalize() for i in row['additionalCollectorNotes'].split('. '))
+                x = '. '.join(i for i in row['additionalCollectorNotes'].split('. '))
                 occurrenceRemarks += x + '. '
                 # occurrenceRemarks += row['additionalCollectorNotes'].capitalize() + '. '
             if row['iNaturalist ID']:
-                occurrenceRemarks += "<a href='https://inaturalist.org/observations/" + row['iNaturalist ID'] + "' target='_blank' style='color: blue';>iNaturalist Record: " + row['iNaturalist ID']  + "</a>."
+                occurrenceRemarks += "iNaturalist Record: " + row['iNaturalist ID'] + "."
             row['occurrenceRemarks'] = occurrenceRemarks              
             
 # Populate new field 'description'
 def description(row):
             description = ''
             if row['habit']:
-                description += 'Habit: ' + row['habit'] + '. '
+                description += 'Habit: ' + row['habit'].lower() + '. '
             if row['graminoidHabit']:
-                description += 'Graminoid habit: ' + row['graminoidHabit'] + '. '
+                description += 'Graminoid habit: ' + row['graminoidHabit'].lower() + '. '
             if row['lifeCycleHabit']:
-                description += 'Life cycle habit: ' + row['lifeCycleHabit'] + '. '
+                description += 'Life cycle habit: ' + row['lifeCycleHabit'].lower() + '. '
             if row['flowerColor']:
-                description += 'Flower color: ' + row['flowerColor'] + '. '
+                description += 'Flower color: ' + row['flowerColor'].lower() + '. '
             if row['heightInCentimeters']:
                 description += 'Approximate height in centimeters: ' + row['heightInCentimeters'] + '. '
             if row['additionalDescription']:
@@ -270,13 +268,13 @@ def dynamicProperties(row):
             dynamicProperties = '' 
             dynamicProperties += '{'            
             if row['habit']:
-                dynamicProperties += '"Habit":"' + row['habit'] + '",'
+                dynamicProperties += '"Habit":"' + row['habit'].lower() + '",'
             if row['graminoidHabit']:
-                dynamicProperties += '"graminoidHabit":"' + row['graminoidHabit'] + '",'
+                dynamicProperties += '"graminoidHabit":"' + row['graminoidHabit'].lower() + '",'
             if row['lifeCycleHabit']:
-                dynamicProperties += '"lifeCycleHabit":"' + row['lifeCycleHabit'] + '",'
+                dynamicProperties += '"lifeCycleHabit":"' + row['lifeCycleHabit'].lower() + '",'
             if row['flowerColor']:
-                dynamicProperties += '"flowerColor":"' + row['flowerColor'] + '",'
+                dynamicProperties += '"flowerColor":"' + row['flowerColor'].lower() + '",'
             if row['heightInCentimeters']:
                 dynamicProperties += '"heightInCentimeters":' + row['heightInCentimeters'] + ','
             if row['additionalDescription']:
@@ -452,7 +450,6 @@ def gnv_function(nameStrings):
         dataSourceTitleShort = gnvResponseJSON["names"][0]["results"][0]["dataSourceTitleShort"]
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 if __name__ == "__main__":
     main()
