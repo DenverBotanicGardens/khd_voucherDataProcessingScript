@@ -30,6 +30,7 @@ import pandas as pd
 import requests
 import urllib
 import json
+import re
 # Set mode = 1 to enter file names as command line arguments
 # Set mode = 2 to enter file names inside this script
 mode = 2
@@ -46,8 +47,8 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/.csv'
-    output_file = 'C:/KHD_voucherDataProcessingScript/.csv'
+    input_file = 'C:/KHD_voucherDataProcessingScript/test_rick.csv'
+    output_file = 'C:/KHD_voucherDataProcessingScript/test_script.csv'
 
 def main():
     
@@ -96,7 +97,7 @@ def main():
                 materialSample_disposition(row)          
                 materialSample_preservationType(row)
                 establishmentMeans(row)
-            
+
                 writer.writerow(row)
                 
         # Export the outfile as an Excel file if user indicated .xlsx
@@ -451,6 +452,7 @@ def gnv_function(nameStrings):
         dataSourceTitleShort = gnvResponseJSON["names"][0]["results"][0]["dataSourceTitleShort"]
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
     main()
