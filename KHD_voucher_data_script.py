@@ -46,8 +46,8 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/.csv'
-    output_file = 'C:/KHD_voucherDataProcessingScript/.csv'
+    input_file = 'C:/KHD_voucherDataProcessingScript/20234_TSchweich_rick.csv'
+    output_file = 'C:/KHD_voucherDataProcessingScript/20234_TSchweich_script.csv'
 
 def main():
     
@@ -71,7 +71,7 @@ def main():
     with open(input_csv, 'r') as infile:
         reader = csv.DictReader(infile)
         # Add a list of new field names to be added to existing fields
-        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'minimumElevationInMeters_USGS', 'georeferenceRemarks','GNVmatchType','GNVmatchedCanonicalFull','GNVisSynonym','GNVcurrentCanonicalFull','GNVdataSourceTitleShort']
+        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'localityWithSiteName', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'minimumElevationInMeters_USGS', 'georeferenceRemarks','GNVmatchType','GNVmatchedCanonicalFull','GNVisSynonym','GNVcurrentCanonicalFull','GNVdataSourceTitleShort']
         # Open the output file
         with open(outfile, 'w', newline='') as outfile:
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -83,6 +83,7 @@ def main():
 
             # Execute a function for each new data field        
             for row in reader:
+                localityWithSiteName(row)
                 minimumElevationInMeters(row)
                 verifyScientificNames(row)
                 habitat(row)
@@ -96,9 +97,8 @@ def main():
                 materialSample_disposition(row)          
                 materialSample_preservationType(row)
                 establishmentMeans(row)
-            
                 writer.writerow(row)
-                
+        
         # Export the outfile as an Excel file if user indicated .xlsx
         if ext_out == "xlsx":
             df = pd.read_csv('temp_out.csv')
@@ -240,24 +240,24 @@ def occurrenceRemarks(row):
             if row['Tissue Collected'].lower() == 'y'and row['Tissue Relationship'].lower() == '':
                 occurrenceRemarks += 'Tissue sample collected. '
             if row['additionalCollectorNotes']:
-                x = '. '.join(i.capitalize() for i in row['additionalCollectorNotes'].split('. '))
+                x = '. '.join(i for i in row['additionalCollectorNotes'].split('. '))
                 occurrenceRemarks += x + '. '
                 # occurrenceRemarks += row['additionalCollectorNotes'].capitalize() + '. '
             if row['iNaturalist ID']:
-                occurrenceRemarks += "<a href='https://inaturalist.org/observations/" + row['iNaturalist ID'] + "' target='_blank' style='color: blue';>iNaturalist Record: " + row['iNaturalist ID']  + "</a>."
+                occurrenceRemarks += "iNaturalist Record: " + row['iNaturalist ID']  + "."
             row['occurrenceRemarks'] = occurrenceRemarks              
             
 # Populate new field 'description'
 def description(row):
             description = ''
             if row['habit']:
-                description += 'Habit: ' + row['habit'] + '. '
+                description += 'Habit: ' + row['habit'].lower() + '. '
             if row['graminoidHabit']:
-                description += 'Graminoid habit: ' + row['graminoidHabit'] + '. '
+                description += 'Graminoid habit: ' + row['graminoidHabit'].lower() + '. '
             if row['lifeCycleHabit']:
-                description += 'Life cycle habit: ' + row['lifeCycleHabit'] + '. '
+                description += 'Life cycle habit: ' + row['lifeCycleHabit'].lower() + '. '
             if row['flowerColor']:
-                description += 'Flower color: ' + row['flowerColor'] + '. '
+                description += 'Flower color: ' + row['flowerColor'].lower() + '. '
             if row['heightInCentimeters']:
                 description += 'Approximate height in centimeters: ' + row['heightInCentimeters'] + '. '
             if row['additionalDescription']:
@@ -269,13 +269,13 @@ def dynamicProperties(row):
             dynamicProperties = '' 
             dynamicProperties += '{'            
             if row['habit']:
-                dynamicProperties += '"Habit":"' + row['habit'] + '",'
+                dynamicProperties += '"Habit":"' + row['habit'].lower() + '",'
             if row['graminoidHabit']:
-                dynamicProperties += '"graminoidHabit":"' + row['graminoidHabit'] + '",'
+                dynamicProperties += '"graminoidHabit":"' + row['graminoidHabit'].lower() + '",'
             if row['lifeCycleHabit']:
-                dynamicProperties += '"lifeCycleHabit":"' + row['lifeCycleHabit'] + '",'
+                dynamicProperties += '"lifeCycleHabit":"' + row['lifeCycleHabit'].lower() + '",'
             if row['flowerColor']:
-                dynamicProperties += '"flowerColor":"' + row['flowerColor'] + '",'
+                dynamicProperties += '"flowerColor":"' + row['flowerColor'].lower() + '",'
             if row['heightInCentimeters']:
                 dynamicProperties += '"heightInCentimeters":' + row['heightInCentimeters'] + ','
             if row['additionalDescription']:
@@ -331,6 +331,13 @@ def establishmentMeans(row):
     if row['cultivationStatus'] == '1':
         establishmentMeans += 'managed'
     row['establishmentMeans'] = establishmentMeans
+
+# Populate new field 'localityWithSiteName'
+def localityWithSiteName(row):
+    localityWithSiteName = ''            
+    if row['Site Name']:
+        localityWithSiteName += row['Site Name'] + ". " + row['locality']
+    row['localityWithSiteName'] = localityWithSiteName
 
 #ELEVATION FROM USGS API---------------------------------------------------------------------------------------------
 # USGS Elevation Point Query Service
