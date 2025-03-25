@@ -30,6 +30,7 @@ import pandas as pd
 import requests
 import urllib
 import json
+import re
 # Set mode = 1 to enter file names as command line arguments
 # Set mode = 2 to enter file names inside this script
 mode = 2
@@ -46,8 +47,8 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/20234_TSchweich_rick.csv'
-    output_file = 'C:/KHD_voucherDataProcessingScript/20234_TSchweich_script.csv'
+    input_file = 'C:/KHD_voucherDataProcessingScript/.csv'
+    output_file = 'C:/KHD_voucherDataProcessingScript/.csv'
 
 def main():
     
@@ -71,7 +72,7 @@ def main():
     with open(input_csv, 'r') as infile:
         reader = csv.DictReader(infile)
         # Add a list of new field names to be added to existing fields
-        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'localityWithSiteName', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'minimumElevationInMeters_USGS', 'georeferenceRemarks','GNVmatchType','GNVmatchedCanonicalFull','GNVisSynonym','GNVcurrentCanonicalFull','GNVdataSourceTitleShort']
+        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'localityWithSiteName', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'associatedOccurrence:type', 'associatedOccurrence:basisOfRecord', 'associatedOccurrence:relationship', 'associatedOccurrence:resourceURL', 'minimumElevationInMeters_USGS', 'georeferenceRemarks','GNVmatchType','GNVmatchedCanonicalFull','GNVisSynonym','GNVcurrentCanonicalFull','GNVdataSourceTitleShort']
         # Open the output file
         with open(outfile, 'w', newline='') as outfile:
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -84,7 +85,7 @@ def main():
             # Execute a function for each new data field        
             for row in reader:
                 localityWithSiteName(row)
-                minimumElevationInMeters(row)
+                # minimumElevationInMeters(row)
                 verifyScientificNames(row)
                 habitat(row)
                 dataGeneralizations(row)
@@ -92,11 +93,14 @@ def main():
                 occurrenceRemarks(row)
                 description(row)
                 dynamicProperties(row)
-                # associatedTaxa(row)         
                 materialSample_sampleType(row)
                 materialSample_disposition(row)          
                 materialSample_preservationType(row)
                 establishmentMeans(row)
+                associatedOccurrenceType(row)
+                associatedOccurrenceBasisOfRecord(row)
+                associatedOccurrenceRelationship(row)
+                associatedOccurrenceResourceURL(row)
                 writer.writerow(row)
         
         # Export the outfile as an Excel file if user indicated .xlsx
@@ -177,7 +181,7 @@ def habitat(row):
         if row['microHabitat']:
             habitat += 'Area immediately surrounding specimen: ' + row['microHabitat'] + '. '
         if row['land use/disturbance']:
-            habitat += 'Land use/disturbance history: ' + row['land use/disturbance'] + '. '
+            habitat += 'Land use and disturbances: ' + row['land use/disturbance'] + '. '
         if row['slope']:
             habitat += 'Estimated slope in degrees: ' + row['slope'] + '. '                
         if row['aspect']:
@@ -209,7 +213,7 @@ def locationRemarks(row):
                 locationRemarks += 'Landowner: ' + row['Landowner'] + '.'
             row['locationRemarks'] = locationRemarks            
            
-            
+
 # Populate new field 'occurrenceRemarks'
 # Frequency data are being translated to new values.
 def occurrenceRemarks(row):   
@@ -291,16 +295,6 @@ def dynamicProperties(row):
                 dynamicProperties = ''
                 
             row['dynamicProperties'] = dynamicProperties                
-            
-            
-# update 'associatedTaxa'
-# This updates an existing field rather than populating a new field
-# def associatedTaxa(row):            
-#             associatedTaxa = ''
-#             if row['host']:
-#                 associatedTaxa += row['associatedTaxa'] + ', host: ' + row['host']
-#             row['associatedTaxa'] = associatedTaxa
-
 
 # Populate new field 'materialSample-sampleType'
 def materialSample_sampleType(row):    
@@ -338,6 +332,35 @@ def localityWithSiteName(row):
     if row['Site Name']:
         localityWithSiteName += row['Site Name'] + ". " + row['locality']
     row['localityWithSiteName'] = localityWithSiteName
+
+#Populate new field 'associatedOccurrence:type'
+def associatedOccurrenceType(row):
+    associatedOccurrenceType = ''
+    if row['iNaturalist ID']:
+        associatedOccurrenceType += 'Occurrence - External Link'
+    row['associatedOccurrence:type'] = associatedOccurrenceType
+
+#Populate new field 'associatedOccurrence:basisOfRecord'
+def associatedOccurrenceBasisOfRecord(row):
+    associatedOccurrenceBasisOfRecord = ''
+    if row['iNaturalist ID']:
+        associatedOccurrenceBasisOfRecord += 'Human Observation'
+    row['associatedOccurrence:basisOfRecord'] = associatedOccurrenceBasisOfRecord
+
+#Populate new field 'associatedOccurrence:relationship'
+def associatedOccurrenceRelationship(row):
+    associatedOccurrenceRelationship = ''
+    if row['iNaturalist ID']:
+        associatedOccurrenceRelationship += 'derivedFromSameIndividual'
+    row['associatedOccurrence:relationship'] = associatedOccurrenceRelationship
+
+#Populate new field 'associatedOccurrence:resourceURL'
+def associatedOccurrenceResourceURL(row):
+    associatedOccurrenceResourceURL = ''
+    if row['iNaturalist ID']:
+        associatedOccurrenceResourceURL += 'https://www.inaturalist.org/observations/' + row['iNaturalist ID'] 
+    row['associatedOccurrence:resourceURL'] = associatedOccurrenceResourceURL
+
 
 #ELEVATION FROM USGS API---------------------------------------------------------------------------------------------
 # USGS Elevation Point Query Service
