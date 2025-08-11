@@ -47,8 +47,8 @@ if mode == 1:
 # Name input and output files here for mode = 2
 #-------------------------------------------------    
 if mode == 2:
-    input_file = 'C:/KHD_voucherDataProcessingScript/.csv'
-    output_file = 'C:/KHD_voucherDataProcessingScript/.csv'
+    input_file = 'C:/KHD_voucherDataProcessingScript/2025_MNepokroeff_vouchers.csv'
+    output_file = 'C:/KHD_voucherDataProcessingScript/2025_MNepokroeff_vouchers_script.csv'
 
 def main():
     
@@ -85,7 +85,7 @@ def main():
             # Execute a function for each new data field        
             for row in reader:
                 localityWithSiteName(row)
-                # minimumElevationInMeters(row)
+                minimumElevationInMeters(row)
                 verifyScientificNames(row)
                 habitat(row)
                 dataGeneralizations(row)
@@ -234,7 +234,7 @@ def occurrenceRemarks(row):
             # Populate field 'occurrenceRemarks'         
             occurrenceRemarks = ''
             if row['Project Title']:
-                occurrenceRemarks += row['Project Title'].title() + '. '
+                occurrenceRemarks += row['Project Title'] + '. '
             if row['Frequency'] and freq != '':
                 occurrenceRemarks += 'Estimated frequency within viewshed: ' + freq + '. '
             if row['Tissue Collected'].lower() == 'y'and row['Tissue Relationship'].lower() == 'same individual':
@@ -386,7 +386,6 @@ def minimumElevationInMeters(row):
           'lat': lat,
           'lon': lon
           }, index=[0])
-          #print(df)
           #run function that calls API
           elevation_function(df, 'lat', 'lon')
           georeferenceRemarks(row)
@@ -409,6 +408,7 @@ def elevation_function(df, lat_column, lon_column):
     #elevations.append(result.json()['USGS_Elevation_Point_Query_Service']['Elevation_Query']['Elevation'])
     #new 2023:
     #print(json.dumps((result.json()['value'])))
+    print(result.status_code)
     global elevationResult
     elevationResult = json.dumps((result.json()['value'])).replace('"','')[:-8]
     # print("value from api" + json.dumps((result.json()['value'])))
