@@ -31,6 +31,9 @@ import requests
 import urllib
 import json
 import re
+import zipfile
+import geopandas as gpd
+from shapely.geometry import Point
 # Set mode = 1 to enter file names as command line arguments
 # Set mode = 2 to enter file names inside this script
 mode = 2
@@ -72,7 +75,7 @@ def main():
     with open(input_csv, 'r') as infile:
         reader = csv.DictReader(infile)
         # Add a list of new field names to be added to existing fields
-        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'localityWithSiteName', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'associatedOccurrence:type', 'associatedOccurrence:basisOfRecord', 'associatedOccurrence:relationship', 'associatedOccurrence:resourceURL', 'minimumElevationInMeters_USGS', 'georeferenceRemarks','GNVmatchType','GNVmatchedCanonicalFull','GNVisSynonym','GNVcurrentCanonicalFull','GNVdataSourceTitleShort']
+        fieldnames = reader.fieldnames + ['habitat', 'dataGeneralizations', 'locationRemarks', 'localityWithSiteName', 'occurrenceRemarks', 'description', 'dynamicProperties', 'materialSample-sampleType', 'materialSample-disposition', 'materialSample-preservationType', 'establishmentMeans', 'associatedOccurrence:type', 'associatedOccurrence:basisOfRecord', 'associatedOccurrence:relationship', 'associatedOccurrence:resourceURL', 'minimumElevationInMeters_USGS', 'georeferenceRemarks','GNVmatchType','GNVmatchedCanonicalFull','GNVisSynonym','GNVcurrentCanonicalFull','GNVdataSourceTitleShort', 'on_reservation', 'reservation_name', 'reservation_type']
         # Open the output file
         with open(outfile, 'w', newline='') as outfile:
             writer = csv.DictWriter(outfile, fieldnames=fieldnames)
@@ -101,6 +104,7 @@ def main():
                 associatedOccurrenceBasisOfRecord(row)
                 associatedOccurrenceRelationship(row)
                 associatedOccurrenceResourceURL(row)
+                aiannhCheck(row)
                 writer.writerow(row)
         
         # Export the outfile as an Excel file if user indicated .xlsx
@@ -481,6 +485,89 @@ def gnv_function(nameStrings):
         dataSourceTitleShort = gnvResponseJSON["names"][0]["results"][0]["dataSourceTitleShort"]
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
+#AIANNH CENSUS BUREAU CHECK---------------------------------------------------------------------------------------------
+# CENSUS BUREAU TIGER
+# ---- Config ----
+TIGER_YEAR = "2023"
+SHAPEFILE_URL = f"https://www2.census.gov/geo/tiger/TIGER{TIGER_YEAR}/AIANNH/tl_{TIGER_YEAR}_us_aiannh.zip"
+ 
+CACHE_DIR = os.path.join(os.path.expanduser("~"), ".cache", "aiannh_shapefile")
+CACHE_ZIP = os.path.join(CACHE_DIR, f"tl_{TIGER_YEAR}_us_aiannh.zip")
+CACHE_SHP = os.path.join(CACHE_DIR, f"tl_{TIGER_YEAR}_us_aiannh.shp")
+ 
+LAT_COL = "decimalLatitude"
+LON_COL = "decimalLongitude"
+
+#Run a check against the Census Bureau TIGER shapefiles to see if any coordinates fall within AIANNH land
+# Download (or reuse cached) AIANNH shapefile and load it ONCE, before the
+# row-processing loop runs. This happens at import time, same as the elevation
+# and Global Names API URLs being set up above.
+def _load_aiannh_shapefile():
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    if not os.path.exists(CACHE_SHP):
+        print(f"Downloading AIANNH shapefile from {SHAPEFILE_URL} ...")
+        resp = requests.get(SHAPEFILE_URL, timeout=60)
+        resp.raise_for_status()
+        with open(CACHE_ZIP, "wb") as f:
+            f.write(resp.content)
+        print("Extracting AIANNH shapefile...")
+        with zipfile.ZipFile(CACHE_ZIP) as z:
+            z.extractall(CACHE_DIR)
+ 
+    shp_path = CACHE_SHP
+    if not os.path.exists(shp_path):
+        # in case the file inside the zip is named slightly differently
+        for name in os.listdir(CACHE_DIR):
+            if name.endswith(".shp"):
+                shp_path = os.path.join(CACHE_DIR, name)
+                break
+ 
+    gdf = gpd.read_file(shp_path)
+    if gdf.crs is None:
+        gdf.set_crs(epsg=4269, inplace=True)
+    # reproject to WGS84 (EPSG:4326) to match standard decimalLatitude/decimalLongitude values
+    gdf = gdf.to_crs(epsg=4326)
+    return gdf
+ 
+reservations_gdf = _load_aiannh_shapefile()
+ 
+#Run a check against the Census Bureau TIGER shapefiles to see if any coordinates fall within AIANNH land
+#Populate new fields 'on_reservation', 'reservation_name', 'reservation_type'
+def aiannhCheck(row):
+    on_reservation = ''
+    reservation_name = ''
+    reservation_type = ''
+ 
+    if row[LAT_COL] and row[LON_COL]:
+        try:
+            lat_val = float(row[LAT_COL])
+            lon_val = float(row[LON_COL])
+            point = Point(lon_val, lat_val)
+ 
+            # NOTE: for this version of geopandas, predicate="within" tests
+            # whether the query point is within the candidate polygon
+            # (i.e. point.within(polygon)) - this is the correct direction
+            # for a point-in-polygon check. If you upgrade geopandas and this
+            # stops matching known points, re-test with "contains" instead.
+            possible_idx = list(reservations_gdf.sindex.query(point, predicate="within"))
+ 
+            if possible_idx:
+                match = reservations_gdf.iloc[possible_idx[0]]
+                on_reservation = True
+                reservation_name = match['NAME'] if 'NAME' in reservations_gdf.columns else ''
+                reservation_type = match['NAMELSAD'] if 'NAMELSAD' in reservations_gdf.columns else ''
+            else:
+                on_reservation = False
+        except ValueError:
+            # decimalLatitude/decimalLongitude weren't valid numbers; leave fields blank
+            pass
+ 
+    row['on_reservation'] = on_reservation
+    row['reservation_name'] = reservation_name
+    row['reservation_type'] = reservation_type
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
     main()
